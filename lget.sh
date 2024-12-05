@@ -4,18 +4,34 @@ base_dir="downloads"
 temp_links="temp_new_links"
 processed_links="processed_links"
 new_links="new_links"
+output_dir="LWGET_CONTENTS"
+absolute_only_flag=false
+error_links="error_links"
+show_errors_flag=false
 
-absolute_only=false
-if [[ $1 == "--absolute" ]]; then
-  absolute_only=true
-fi
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --absolute)
+      absolute_only_flag=true
+      shift
+      ;;
+    --dir)
+      output_dir=$2
+      shift 2
+      ;;
+    --show-err)
+      show_errors_flag=true
+      shift
+      ;;
+  esac
+done
 
-if [ ! -d LWGET_CONTENTS ]; then
-  echo "Eroare: Nu există directorul LWGET_CONTENTS. Rulați mai întâi lwget cu un URL."
+if [ ! -d "$output_dir" ]; then
+  echo "Eroare: Nu există directorul $output_dir. Rulați mai întâi lwget cu un URL."
   exit 1
 fi
 
-cd LWGET_CONTENTS
+cd "$output_dir"
 
 if [ ! -f "$processed_links" ]; then
   echo "Eroare: Nu mai exista fisierul $processed_links!"
@@ -29,16 +45,15 @@ fi
 
 touch "$temp_links"
 
+if [[ "$show_errors_flag" == true ]]; then
+  touch "$error_links"
+fi
+
 while read -r link; do
   
-  if [[ "$link" == \#* ]]; then
-    echo "Link ignorat (ancoră): $link"
-    continue
-  fi
-
-  if [[ "$link" != http* ]]; then
-    echo "Link relativ incomplet: $link"
-    continue
+  if [[ "$link" =~ ^\#+ ]]; then
+     echo "Link ignorat (ancoră): $link"
+     continue
   fi
     
   wget --content-disposition -q "$link" -P "$base_dir"
@@ -56,10 +71,10 @@ while read -r link; do
         if [[ "$extracted_link" == http* ]]; then
           # echo "Link absolut: $extracted_link"
           echo "$extracted_link" >> "$temp_links"
-        elif [[ "$extracted_link" == /* && "$absolute_only" == false ]]; then
+        elif [[ "$extracted_link" == /* && "$absolute_only_flag" == false ]]; then
           # echo "Link relativ absolut completat: ${base_url}${extracted_link}"
           echo "${base_url}${extracted_link}" >> "$temp_links"
-        elif [[ "$absolute_only" == false ]]; then
+        elif [[ "$absolute_only_flag" == false ]]; then
           # echo "Link relativ la director completat: ${base_url}/${current_dir}/${extracted_link}"
           echo "${base_url}/${current_dir}/${extracted_link}" >> "$temp_links"
         fi
@@ -72,6 +87,9 @@ while read -r link; do
     fi
   else
     echo "Eroare la descărcarea link-ului: $link"
+    if [[ "$show_errors_flag" == true ]]; then
+      echo "$link" >> "$error_links"
+    fi
   fi
 
   echo "$link" >> "$processed_links"
