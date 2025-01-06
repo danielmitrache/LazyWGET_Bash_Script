@@ -1,4 +1,4 @@
-# Proiect-ITBI
+# LazyWGET Bash Script
 Citeste Proiect LazyWGET.pdf
 <br>
 <br>
