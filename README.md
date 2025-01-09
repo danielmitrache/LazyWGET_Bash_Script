@@ -1,5 +1,5 @@
 # LazyWGET Bash Script
-Citeste Proiect LazyWGET.pdf
+Proiect realizat pentru cursul de Instrumente si Tehnici de Baza in Informatica. Citeste Proiect LazyWGET.pdf
 <br>
 <br>
 Pentru a rula:
